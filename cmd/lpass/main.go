@@ -17,10 +17,14 @@ const (
 )
 
 func main() {
-	pluginMap := lpassPlugin.Map(PluginPrefix, pluginPaths)
+	pluginPaths := []string{}
+	pluginMap, err := lpassPlugin.Map(PluginPrefix, pluginPaths)
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Debug("Plugin map: %v", pluginMap)
 
-	handshakeConfig := plugin.HandshakeConfig{
+	handshakeConfig := goplugin.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "BASIC_PLUGIN",
 		MagicCookieValue: "hello",
@@ -33,10 +37,10 @@ func main() {
 	}
 	log.Debug("Expanded plugin %s to path %s", plugin, pluginPath)
 
-	client := goplugin.NewClient(&plugin.ClientConfig{
+	client := goplugin.NewClient(&goplugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins:         pluginMap,
-		Cmd:             exec.Command(),
+		Cmd:             exec.Command(pluginPath),
 	})
 	defer client.Kill()
 
