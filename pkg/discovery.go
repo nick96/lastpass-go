@@ -2,11 +2,13 @@ package plugin
 
 import (
 	goplugin "github.com/hashicorp/go-plugin"
-	log "github.com/sirupsen/logrus"
+	// log "github.com/sirupsen/logrus"
 	"os"
 	"path"
 	"strings"
 	"fmt"
+	"path/filepath"
+	"io/ioutil"
 )
 
 
@@ -63,20 +65,20 @@ func findPlugins(prefix string, pluginPaths []string) ([]string, error) {
 func findPluginsInPath(prefix string) ([]string, error) {
 	path := os.Getenv("PATH")
 	plugins := make([]string, 0)
-	for _, dir := range path.SplitList(path) {
+	for _, dir := range filepath.SplitList(path) {
 		dirPlugins, err := findPluginsInDirectory(prefix, dir)
 		if err != nil {
 			return []string{}, err
 		}
-		plugins := append(plugins, dirPlugins...)
+		plugins = append(plugins, dirPlugins...)
 	}
-	return plugins
+	return plugins, nil
 }
 
 // findPluginsInDirectory recursively finds plugins with a given prefix in a directory.
 func findPluginsInDirectory(prefix, dir string) ([]string, error) {
-	plugins := make([]string, 0)
-	files, err := ioutil.ReadDir(path)
+	plugins := []string{}
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return []string{}, err
 	}
@@ -87,10 +89,10 @@ func findPluginsInDirectory(prefix, dir string) ([]string, error) {
 			if err != nil {
 				return []string{}, err
 			}
-			plugins = append(plugins, belowPlugins)
+			plugins = append(plugins, belowPlugins...)
 		} else if strings.HasPrefix(file.Name(), prefix) {
 			plugins = append(plugins, file.Name())
 		}
 	}
-	return plugins
+	return plugins, nil
 }
