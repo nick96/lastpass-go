@@ -57,4 +57,3 @@ func main() {
 	lastpass := raw.(lpassPlugin.LastPass)
 	lastpass.Execute(os.Args[2:])
 }
-
