@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"net/rpc"
+
 	"github.com/hashicorp/go-plugin"
 )
 
@@ -27,7 +28,7 @@ type LastPassRPC struct {
 
 // Server ...
 func (p *LastPassPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
-	return &LastPassRPCServer{Impl: p.Impl }, nil
+	return &LastPassRPCServer{Impl: p.Impl}, nil
 }
 
 // Client ...

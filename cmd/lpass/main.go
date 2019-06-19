@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("Plugin map: %v", pluginMap)
+	log.Debugf("Plugin map: %v", pluginMap)
 
 	handshakeConfig := goplugin.HandshakeConfig{
 		ProtocolVersion:  1,
@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("Expanded plugin %s to path %s", plugin, pluginPath)
+	log.Debugf("Expanded plugin %s to path %s", plugin, pluginPath)
 
 	client := goplugin.NewClient(&goplugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
@@ -46,12 +46,12 @@ func main() {
 
 	rpcClient, err := client.Client()
 	if err != nil {
-		log.Fatal("Error: Could not get client: %v", err)
+		log.Fatalf("Error: Could not get client: %v", err)
 	}
 
 	raw, err := rpcClient.Dispense(os.Args[1])
 	if err != nil {
-		log.Fatal("Error: Could not dispense greeter: %v", err)
+		log.Fatalf("Error: Could not dispense greeter: %v", err)
 	}
 
 	lastpass := raw.(lpassPlugin.LastPass)

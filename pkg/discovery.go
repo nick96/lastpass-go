@@ -1,16 +1,15 @@
 package plugin
 
 import (
-	goplugin "github.com/hashicorp/go-plugin"
-	// log "github.com/sirupsen/logrus"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
-	"strings"
-	"fmt"
 	"path/filepath"
-	"io/ioutil"
-)
+	"strings"
 
+	goplugin "github.com/hashicorp/go-plugin"
+)
 
 // Map returns a map of plugin names to the corresponding plugin object.
 func Map(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
@@ -32,7 +31,7 @@ func Map(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error
 func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
 	plugins, err := findPlugins(prefix, pluginPaths)
 	if err != nil {
-		return "", fmt.Errorf("Error: Could not expand plugin %s: %v", name, err)
+		return "", fmt.Errorf("could not expand plugin %s: %v", name, err)
 	}
 
 	for _, plugin := range plugins {
@@ -40,7 +39,7 @@ func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
 			return plugin, nil
 		}
 	}
-	return "", fmt.Errorf("Error: Could not find plugin %s", name)
+	return "", fmt.Errorf("could not find plugin %s", name)
 }
 
 // Find all available plugins and return the absolute path to them.
@@ -84,7 +83,7 @@ func findPluginsInDirectory(prefix, dir string) ([]string, error) {
 	}
 
 	for _, file := range files {
-		if (file.IsDir()) {
+		if file.IsDir() {
 			belowPlugins, err := findPluginsInDirectory(prefix, file.Name())
 			if err != nil {
 				return []string{}, err
