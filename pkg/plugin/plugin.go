@@ -17,7 +17,7 @@ var (
 	}
 )
 
-// LastPass defines the interface a lastpass plugin must fulfill.
+// LastPass defines the interface a lastpass plugin must fulfil.
 type LastPass interface {
 	Execute(args []string)
 }
