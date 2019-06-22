@@ -25,6 +25,7 @@ steps:
       go test -coverprofile=coverage.txt -covermode count -timeout 1s -v ./... 2>&1 | tee gotest.out
       go-junit-report <gotest.out >gotest.xml
       gocover-cobertura <coverage.txt >coverage.xml
+    displayName: 'Test'
 
   - task: PublishTestResults@2
     inputs:
