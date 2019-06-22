@@ -1,16 +1,20 @@
-package plugin
+package discovery
 
 import (
-	goplugin "github.com/hashicorp/go-plugin"
-	log "github.com/sirupsen/logrus"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
+
+	goplugin "github.com/hashicorp/go-plugin"
+
+	lpassPlugin "github.com/nick96/pkg/plugin"
 )
 
-
-// PluginMap returns a map of plugin names to the corresponding plugin object.
-func PluginMap(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
+// Map returns a map of plugin names to the corresponding plugin object.
+func Map(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
 	pluginMap := map[string]goplugin.Plugin{}
 	plugins, err := findPlugins(prefix, pluginPaths)
 	if err != nil {
@@ -19,12 +23,25 @@ func PluginMap(prefix string, pluginPaths []string) (map[string]goplugin.Plugin,
 
 	for _, plugin := range plugins {
 		name := strings.TrimPrefix(path.Base(plugin), prefix)
-		pluginObb := plugin.Plugin{
-
-		}
+		pluginMap[name] = &LastPassPlugin{}
 	}
 
 	return pluginMap, nil
+}
+
+// ExpandName expands the name of plugin to the path to its corresponding executable.
+func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
+	plugins, err := findPlugins(prefix, pluginPaths)
+	if err != nil {
+		return "", fmt.Errorf("could not expand plugin %s: %v", name, err)
+	}
+
+	for _, plugin := range plugins {
+		if strings.HasSuffix(plugin, name) {
+			return plugin, nil
+		}
+	}
+	return "", fmt.Errorf("could not find plugin %s", name)
 }
 
 // Find all available plugins and return the absolute path to them.
@@ -49,34 +66,34 @@ func findPlugins(prefix string, pluginPaths []string) ([]string, error) {
 func findPluginsInPath(prefix string) ([]string, error) {
 	path := os.Getenv("PATH")
 	plugins := make([]string, 0)
-	for _, dir := range path.SplitList(path) {
+	for _, dir := range filepath.SplitList(path) {
 		dirPlugins, err := findPluginsInDirectory(prefix, dir)
 		if err != nil {
 			return []string{}, err
 		}
-		plugins := append(plugins, dirPlugins...)
+		plugins = append(plugins, dirPlugins...)
 	}
-	return plugins
+	return plugins, nil
 }
 
 // findPluginsInDirectory recursively finds plugins with a given prefix in a directory.
 func findPluginsInDirectory(prefix, dir string) ([]string, error) {
-	plugins := make([]string, 0)
-	files, err := ioutil.ReadDir(path)
+	plugins := []string{}
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return []string{}, err
 	}
 
 	for _, file := range files {
-		if (file.IsDir()) {
+		if file.IsDir() {
 			belowPlugins, err := findPluginsInDirectory(prefix, file.Name())
 			if err != nil {
 				return []string{}, err
 			}
-			plugins = append(plugins, belowPlugins)
+			plugins = append(plugins, belowPlugins...)
 		} else if strings.HasPrefix(file.Name(), prefix) {
 			plugins = append(plugins, file.Name())
 		}
 	}
-	return plugins
+	return plugins, nil
 }

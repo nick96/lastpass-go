@@ -8,7 +8,8 @@ import (
 
 	"os"
 
-	lpassPlugin "github.com/nick96/lastpass-go/pkg"
+	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
+	discovery "github.com/nick96/lastpass-go/pkg/discovery"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 
 func main() {
 	pluginPaths := []string{}
-	pluginMap, err := lpassPlugin.Map(PluginPrefix, pluginPaths)
+	pluginMap, err := discovery.Map(PluginPrefix, pluginPaths)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,7 +32,7 @@ func main() {
 	}
 
 	plugin := os.Args[1]
-	pluginPath, err := lpassPlugin.ExpandName(plugin, PluginPrefix, pluginPaths)
+	pluginPath, err := discovery.ExpandName(plugin, PluginPrefix, pluginPaths)
 	if err != nil {
 		log.Fatal(err)
 	}
