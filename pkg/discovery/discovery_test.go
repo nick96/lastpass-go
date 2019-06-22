@@ -54,6 +54,7 @@ func Test_pluginMap(t *testing.T) {
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := pluginMap(tt.args.prefix, tt.args.pluginPaths, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
@@ -83,6 +84,7 @@ func Test_expandName(t *testing.T) {
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := expandName(tt.args.name, tt.args.prefix, tt.args.pluginPaths, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
@@ -111,6 +113,7 @@ func Test_findPlugins(t *testing.T) {
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := findPlugins(tt.args.prefix, tt.args.pluginPaths, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
@@ -138,6 +141,7 @@ func Test_findPluginsInPath(t *testing.T) {
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := findPluginsInPath(tt.args.prefix, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
@@ -264,6 +268,7 @@ func Test_findPluginsInDirectory(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := findPluginsInDirectory(tt.args.prefix, tt.args.dir, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
