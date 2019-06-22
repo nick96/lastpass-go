@@ -27,4 +27,4 @@ COPY --from=builder /go /go
 
 RUN go get github.com/jstemmer/go-junit-report
 
-CMD go test -v ./... 2>&1 go-junit-report
+CMD go test -v ./... 2>&1 | go-junit-report
