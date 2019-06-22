@@ -127,9 +127,10 @@ func Test_findPlugins(t *testing.T) {
 	}
 }
 
-func Test_findPluginsInPath(t *testing.T) {
+func Test_findPluginsInPathAux(t *testing.T) {
 	type args struct {
 		prefix  string
+		path    string
 		listDir listDir
 	}
 	tests := []struct {
@@ -138,12 +139,65 @@ func Test_findPluginsInPath(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "SingleDirPath",
+			args: args{
+				prefix: "plugin-",
+				path:   "testdir",
+				listDir: func(dir string) ([]os.FileInfo, error) {
+					return []os.FileInfo{
+						fileInfoMock{
+							name:  "plugin-one",
+							isDir: false,
+						},
+						fileInfoMock{
+							name:  "plugin-two",
+							isDir: false,
+						},
+					}, nil
+				},
+			},
+			want:    []string{"plugin-one", "plugin-two"},
+			wantErr: false,
+		},
+		{
+			name: "MultiDirPath",
+			args: args{
+				prefix: "plugin-",
+				path:   "testdir1:testdir2",
+				listDir: func(dir string) ([]os.FileInfo, error) {
+					if dir == "testdir1" {
+						return []os.FileInfo{
+							fileInfoMock{
+								name:  "plugin-one",
+								isDir: false,
+							},
+							fileInfoMock{
+								name:  "plugin-two",
+								isDir: false,
+							},
+						}, nil
+					}
+					return []os.FileInfo{
+						fileInfoMock{
+							name:  "plugin-three",
+							isDir: false,
+						},
+						fileInfoMock{
+							name:  "plugin-four",
+							isDir: false,
+						},
+					}, nil
+				},
+			},
+			want:    []string{"plugin-one", "plugin-two", "plugin-three", "plugin-four"},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := findPluginsInPath(tt.args.prefix, tt.args.listDir)
+			got, err := findPluginsInPathAux(tt.args.prefix, tt.args.path, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("findPluginsInPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -168,7 +222,7 @@ func Test_findPluginsInDirectory(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Multiple plugins",
+			name: "MultiplePlugins",
 			args: args{
 				prefix: "plugin-",
 				dir:    "testdir",
@@ -189,7 +243,7 @@ func Test_findPluginsInDirectory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "One plugin",
+			name: "OnePlugin",
 			args: args{
 				prefix: "plugin-",
 				dir:    "testdir",
@@ -210,7 +264,7 @@ func Test_findPluginsInDirectory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "No plugins",
+			name: "NoPlugins",
 			args: args{
 				prefix: "plugin-",
 				dir:    "testdir",

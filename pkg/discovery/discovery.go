@@ -11,6 +11,7 @@ import (
 	goplugin "github.com/hashicorp/go-plugin"
 
 	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
+	"log"
 )
 
 type listDir func(string) ([]os.FileInfo, error)
@@ -81,8 +82,14 @@ func findPlugins(prefix string, pluginPaths []string, listDir listDir) ([]string
 // Find all plugins in the path
 func findPluginsInPath(prefix string, listDir listDir) ([]string, error) {
 	path := os.Getenv("PATH")
+	return findPluginsInPathAux(prefix, path, listDir)
+}
+
+func findPluginsInPathAux(prefix, path string, listDir listDir) ([]string, error) {
 	plugins := make([]string, 0)
-	for _, dir := range filepath.SplitList(path) {
+	parts := filepath.SplitList(path)
+	log.Printf("Split PATH into parts %v", parts)
+	for _, dir := range parts {
 		dirPlugins, err := findPluginsInDirectory(prefix, dir, listDir)
 		if err != nil {
 			return []string{}, err
