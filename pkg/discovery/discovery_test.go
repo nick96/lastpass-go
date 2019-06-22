@@ -8,6 +8,8 @@ import (
 	"time"
 
 	goplugin "github.com/hashicorp/go-plugin"
+
+	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
 
 type fileInfoMock struct {
@@ -52,7 +54,54 @@ func Test_pluginMap(t *testing.T) {
 		want    map[string]goplugin.Plugin
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "",
+			args: args{
+				prefix:      "plugin-",
+				pluginPaths: []string{"dir1", "dir2"},
+				path:        "dir3",
+				listDir: func(dir string) ([]os.FileInfo, error) {
+					if dir == "dir1" {
+						return []os.FileInfo{
+							fileInfoMock{
+								name:  "plugin-one",
+								isDir: false,
+							},
+							fileInfoMock{
+								name:  "plugin-two",
+								isDir: false,
+							},
+						}, nil
+					} else if dir == "dir2" {
+						return []os.FileInfo{
+							fileInfoMock{
+								name:  "plugin-three",
+								isDir: false,
+							},
+						}, nil
+					} else {
+						return []os.FileInfo{
+							fileInfoMock{
+								name:  "plugin-four",
+								isDir: false,
+							},
+							fileInfoMock{
+								name:  "plugin-five",
+								isDir: false,
+							},
+						}, nil
+					}
+				},
+			},
+			want: map[string]goplugin.Plugin{
+				"one":   &lpassPlugin.LastPassPlugin{},
+				"two":   &lpassPlugin.LastPassPlugin{},
+				"three": &lpassPlugin.LastPassPlugin{},
+				"four":  &lpassPlugin.LastPassPlugin{},
+				"five":  &lpassPlugin.LastPassPlugin{},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
