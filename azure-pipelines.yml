@@ -11,14 +11,11 @@ variables:
 
 steps:
     - script: |
-        mkdir -p '$(GOBIN)'
-        mkdir -p '$(GOPATH)/pkg'
-        mkdir -p '$(modulePath)'
-        shopt -s extglob
-        shopt -s dotglob
-        mv !(gopath) '$(modulePath)'
-        echo '##vso[task.prependpath]$(GOBIN)'
-        echo '##vso[task.prependpath]$(GOROOT)/bin'
+        # Install linter
+        curl -sfL $(GOLANG_LINT_CI_URI)  | sh -s -- -b $(GOBIN) v1.17.1
+
+        # Install JUnit reporter
+        go get github.com/jstemmer/go-junit-report
       displayName: 'Setup workspace'
 
     - script: go version
@@ -29,11 +26,18 @@ steps:
       displayName: 'Build'
 
     - script: |
-        curl -sfL $(GOLANG_LINT_CI_URI)  | sh -s -- -b $(GOBIN) v1.17.1
         golangci-lint run --enable-all
       workingDirectory: '$(modulePath)'
       displayName: 'Lint'
 
-    - script: go test -v ./...
+    - script: |
+        mkdir test-results
+        trap "go-junit-report <test-results/go-test.out >test/results/go-test-report.xml" EXIT
+        go test -v ./... | tee test-results/go-test.out
       workingDirectory: '$(modulePath)'
       displayName: 'Test'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: JUnit
+        testResultsFiles: test-results/*.xml
