@@ -28,5 +28,7 @@ COPY --from=builder /go /go
 RUN go get github.com/jstemmer/go-junit-report
 RUN go get github.com/t-yuki/gocover-cobertura
 
-RUN go test -coverprofile=coverage.txt -covermode count -timeout 1s -v ./... 2>&1 | go-junit-report >/tmp/gotest.xml
-RUN cat coverage.txt | gocover-cobertura >/tmp/coverage.xml
+RUN mkdir /output
+
+RUN go test -coverprofile=coverage.txt -covermode count -timeout 1s -v ./... 2>&1 | go-junit-report >/output/gotest.xml
+RUN cat coverage.txt | gocover-cobertura >/output/coverage.xml
