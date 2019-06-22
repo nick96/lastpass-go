@@ -13,7 +13,7 @@ var (
 	HandshakeConfig plugin.HandshakeConfig = plugin.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "LPASS_MAGIC_COOKIE",
-		MagicCookieValue: "2",
+		MagicCookieValue: "3p622ygmzera3gz6os2hek8rr2fmitpy810meb28",
 	}
 )
 
