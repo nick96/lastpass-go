@@ -37,8 +37,3 @@ steps:
     - script: go test -v ./...
       workingDirectory: '$(modulePath)'
       displayName: 'Test'
-
-    - script: |
-        echo 'TODO'
-      workingDirectory: '$(modulePath)'
-      displayName: 'Release'
