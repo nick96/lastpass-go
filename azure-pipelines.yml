@@ -1,50 +1,24 @@
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-18.04'
 
 variables:
-  GO111MODULE: 'on'
-  GOBIN:  '$(GOPATH)/bin'
-  GOROOT: '/usr/local/go1.12.4'
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath'
-  GOLANG_LINT_CI_URI: 'https://install.goreleaser.com/github.com/golangci/golangci-lint.sh'
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  project: '$(build.repository.name)
 
 steps:
-    - script: |
-        mkdir -p '$(GOBIN)'
-        mkdir -p '$(GOPATH)/pkg'
-        mkdir -p '$(modulePath)'
-        shopt -s extglob
-        shopt -s dotglob
-        mv !(gopath) '$(modulePath)'
-        echo '##vso[task.prependpath]$(GOBIN)'
-        echo '##vso[task.prependpath]$(GOROOT)/bin'
+    - displayName: 'Build'
+      script: |
+        docker build --target builder -t $(project)-build .
+        docker run $(project)-build
 
-        # Install linter
-        curl -sfL $(GOLANG_LINT_CI_URI)  | sh -s -- -b $(GOBIN) v1.17.1
+    - displayName: 'Lint'
+      script: |
+        docker build --target linter -t $(project)-lint .
+        docker run lint
 
-        # Install JUnit reporter
-        go get github.com/jstemmer/go-junit-report
-      displayName: 'Setup workspace'
-
-    - script: go version
-      displayName: 'Version'
-
-    - script: go build -v ./...
-      workingDirectory: '$(modulePath)'
-      displayName: 'Build'
-
-    - script: |
-        golangci-lint run --enable-all
-      workingDirectory: '$(modulePath)'
-      displayName: 'Lint'
-
-    - script: |
-        mkdir test-results
-        trap "go-junit-report <test-results/go-test.out >test/results/go-test-report.xml" EXIT
-        go test -v ./... | tee test-results/go-test.out
-      workingDirectory: '$(modulePath)'
-      displayName: 'Test'
+    - displayName: 'Test'
+      script: |
+        docker build --target tester -t $(project)-test .
+        docker run $(project)-test >test-results/gotest.xml
 
     - task: PublishTestResults@2
       inputs:
