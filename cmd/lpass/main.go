@@ -25,7 +25,6 @@ func main() {
 	}
 	log.Debugf("Plugin map: %v", pluginMap)
 
-
 	plugin := os.Args[1]
 	pluginPath, err := discovery.ExpandName(plugin, PluginPrefix, pluginPaths)
 	if err != nil {
