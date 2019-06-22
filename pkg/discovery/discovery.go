@@ -17,7 +17,7 @@ import (
 
 type listDir func(string) ([]os.FileInfo, error)
 
-//Nolint:Gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	// Implementation of the listDir type that works on the actual file system
 	listDirFs listDir = ioutil.ReadDir
