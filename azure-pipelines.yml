@@ -5,20 +5,20 @@ variables:
   project: '$(build.repository.name)'
 
 steps:
-    - displayName: 'Build'
-      script: |
+    - script: |
         docker build --target builder -t $(project)-build .
         docker run $(project)-build
+      displayName: 'Build'
 
-    - displayName: 'Lint'
-      script: |
+    - script: |
         docker build --target linter -t $(project)-lint .
         docker run lint
+      displayName: 'Lint'
 
-    - displayName: 'Test'
-      script: |
+    - script: |
         docker build --target tester -t $(project)-test .
         docker run $(project)-test >test-results/gotest.xml
+      displayName: 'Test'
 
     - task: PublishTestResults@2
       inputs:
