@@ -1,23 +1,20 @@
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  project: '$(build.repository.name)'
-
 steps:
     - script: |
-        docker build --target builder -t $(project)-build .
-        docker run $(project)-build
+        docker build --target builder -t build .
+        docker run build
       displayName: 'Build'
 
     - script: |
-        docker build --target linter -t $(project)-lint .
+        docker build --target linter -t lint .
         docker run lint
       displayName: 'Lint'
 
     - script: |
-        docker build --target tester -t $(project)-test .
-        docker run $(project)-test >test-results/gotest.xml
+        docker build --target tester -t test .
+        docker run test >test-results/gotest.xml
       displayName: 'Test'
 
     - task: PublishTestResults@2
