@@ -10,7 +10,7 @@ var (
 	// HandshakeConfig is the config for the handshake between lpass and a
 	// plugin. It is provided here as an easy way for everyone to share the same config.
 	//nolint:gochecknoglobals
-	HandshakeConfig plugin.HandshakeConfig = goplugin.HandshakeConfig{
+	HandshakeConfig plugin.HandshakeConfig = plugin.HandshakeConfig{
 		ProtocolVersion:  1,
 		MagicCookieKey:   "LPASS_MAGIC_COOKIE",
 		MagicCookieValue: "2",
