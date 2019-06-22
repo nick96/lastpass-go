@@ -13,19 +13,18 @@ import (
 	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
 
-type listDir func (string) ([]os.FileInfo, error)
+type listDir func(string) ([]os.FileInfo, error)
 
+//nolint:gochecknoglobals
 var (
 	// Implementation of the listDir type that works on the actual file system
 	listDirFs listDir = ioutil.ReadDir
 )
 
-
 // PluginMap returns a map of plugin names to the corresponding plugin object.
 func PluginMap(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
 	return pluginMap(prefix, pluginPaths, listDirFs)
 }
-
 
 // ExpandName expands the name of plugin to the path to its corresponding executable.
 func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
@@ -46,7 +45,6 @@ func pluginMap(prefix string, pluginPaths []string, listDir listDir) (map[string
 
 	return pluginMap, nil
 }
-
 
 func expandName(name, prefix string, pluginPaths []string, listDir listDir) (string, error) {
 	plugins, err := findPlugins(prefix, pluginPaths, listDir)
