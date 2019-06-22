@@ -15,10 +15,15 @@ steps:
     - script: |
         docker build --target tester -t test .
         mkdir test-results
-        docker run test >gotest.xml
+        docker run test -v gotest.xml:gotest.xml -v coverage.xml:coverage.xml
       displayName: 'Test'
 
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: JUnit
         testResultsFiles: gotest.xml
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: coverage.xml
