@@ -3,6 +3,7 @@ module github.com/nick96/lastpass-go
 go 1.12
 
 require (
+	github.com/cweill/gotests v1.5.3 // indirect
 	github.com/hashicorp/go-plugin v1.0.0
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20190619014844-b5b0513f8c1b // indirect
