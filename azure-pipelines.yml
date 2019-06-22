@@ -1,0 +1,43 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  GOBIN:  '$(GOPATH)/bin'
+  GOROOT: '/usr/local/go1.11'
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath'
+  GOLANG_LINT_CI_URI: 'https://install.goreleaser.com/github.com/golangci/golangci-lint.sh'
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+
+steps:
+    - script: |
+        mkdir -p '$(GOBIN)'
+        mkdir -p '$(GOPATH)/pkg'
+        mkdir -p '$(modulePath)'
+        shopt -s extglob
+        shopt -s dotglob
+        mv !(gopath) '$(modulePath)'
+        echo '##vso[task.prependpath]$(GOBIN)'
+        echo '##vso[task.prependpath]$(GOROOT)/bin'
+      displayName: 'Setup workspace'
+
+    - script: go version
+      displayName: 'Version
+
+    - script: go build -v ./...
+      workingDirectory: '$(modulePath)'
+      displayName: 'Build'
+
+    - script: |
+        curl -sfL $(GOLANG_LINT_CI_URI)  | sh -s -- -b $(GOBIN) v1.17.1
+        golang-lint run --enable-all
+      workingDirectory: '$(modulePath)'
+      displayName: 'Lint
+
+    - script: go test -v ./...
+      workingDirectory: '$(modulePath)'
+      displayName: 'Test'
+
+    - script: |
+        echo 'TODO'
+      workingDirectory: '$(modulePath)'
+      displayName: 'Release'
