@@ -13,10 +13,28 @@ import (
 	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
 
-// Map returns a map of plugin names to the corresponding plugin object.
-func Map(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
+type listDir func (string) ([]os.FileInfo, error)
+
+var (
+	// Implementation of the listDir type that works on the actual file system
+	listDirFs listDir = ioutil.ReadDir
+)
+
+
+// PluginMap returns a map of plugin names to the corresponding plugin object.
+func PluginMap(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
+	return pluginMap(prefix, pluginPaths, listDirFs)
+}
+
+
+// ExpandName expands the name of plugin to the path to its corresponding executable.
+func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
+	return expandName(name, prefix, pluginPaths, listDirFs)
+}
+
+func pluginMap(prefix string, pluginPaths []string, listDir listDir) (map[string]goplugin.Plugin, error) {
 	pluginMap := map[string]goplugin.Plugin{}
-	plugins, err := findPlugins(prefix, pluginPaths)
+	plugins, err := findPlugins(prefix, pluginPaths, listDir)
 	if err != nil {
 		return pluginMap, err
 	}
@@ -29,9 +47,9 @@ func Map(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error
 	return pluginMap, nil
 }
 
-// ExpandName expands the name of plugin to the path to its corresponding executable.
-func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
-	plugins, err := findPlugins(prefix, pluginPaths)
+
+func expandName(name, prefix string, pluginPaths []string, listDir listDir) (string, error) {
+	plugins, err := findPlugins(prefix, pluginPaths, listDir)
 	if err != nil {
 		return "", fmt.Errorf("could not expand plugin %s: %v", name, err)
 	}
@@ -45,15 +63,15 @@ func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
 }
 
 // Find all available plugins and return the absolute path to them.
-func findPlugins(prefix string, pluginPaths []string) ([]string, error) {
+func findPlugins(prefix string, pluginPaths []string, listDir listDir) ([]string, error) {
 	// Get the plugins in the path
-	plugins, err := findPluginsInPath(prefix)
+	plugins, err := findPluginsInPath(prefix, listDir)
 	if err != nil {
 		return []string{}, err
 	}
 
 	for _, pluginPath := range pluginPaths {
-		foundPlugins, err := findPluginsInDirectory(prefix, pluginPath)
+		foundPlugins, err := findPluginsInDirectory(prefix, pluginPath, listDir)
 		if err != nil {
 			return []string{}, err
 		}
@@ -63,11 +81,11 @@ func findPlugins(prefix string, pluginPaths []string) ([]string, error) {
 }
 
 // Find all plugins in the path
-func findPluginsInPath(prefix string) ([]string, error) {
+func findPluginsInPath(prefix string, listDir listDir) ([]string, error) {
 	path := os.Getenv("PATH")
 	plugins := make([]string, 0)
 	for _, dir := range filepath.SplitList(path) {
-		dirPlugins, err := findPluginsInDirectory(prefix, dir)
+		dirPlugins, err := findPluginsInDirectory(prefix, dir, listDir)
 		if err != nil {
 			return []string{}, err
 		}
@@ -77,16 +95,16 @@ func findPluginsInPath(prefix string) ([]string, error) {
 }
 
 // findPluginsInDirectory recursively finds plugins with a given prefix in a directory.
-func findPluginsInDirectory(prefix, dir string) ([]string, error) {
+func findPluginsInDirectory(prefix, dir string, listDir listDir) ([]string, error) {
 	plugins := []string{}
-	files, err := ioutil.ReadDir(dir)
+	files, err := listDir(dir)
 	if err != nil {
 		return []string{}, err
 	}
 
 	for _, file := range files {
 		if file.IsDir() {
-			belowPlugins, err := findPluginsInDirectory(prefix, file.Name())
+			belowPlugins, err := findPluginsInDirectory(prefix, file.Name(), listDir)
 			if err != nil {
 				return []string{}, err
 			}
