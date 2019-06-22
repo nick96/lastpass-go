@@ -43,6 +43,7 @@ func Test_pluginMap(t *testing.T) {
 	type args struct {
 		prefix      string
 		pluginPaths []string
+		path        string
 		listDir     listDir
 	}
 	tests := []struct {
@@ -56,7 +57,7 @@ func Test_pluginMap(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := pluginMap(tt.args.prefix, tt.args.pluginPaths, tt.args.listDir)
+			got, err := pluginMap(tt.args.prefix, tt.args.pluginPaths, tt.args.path, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("pluginMap() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -73,6 +74,7 @@ func Test_expandName(t *testing.T) {
 		name        string
 		prefix      string
 		pluginPaths []string
+		path        string
 		listDir     listDir
 	}
 	tests := []struct {
@@ -81,12 +83,77 @@ func Test_expandName(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Found",
+			args: args{
+				name:        "one",
+				prefix:      "plugin-",
+				pluginPaths: []string{"dir1", "dir2"},
+				path:        "dir3:dir4",
+				listDir: func(dir string) ([]os.FileInfo, error) {
+					var files []os.FileInfo
+					switch dir {
+					case "dir1":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-one", false},
+						}
+					case "dir2":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-two", false},
+						}
+					case "dir3":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-four", false},
+						}
+					case "dir4":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-four", false},
+						}
+					}
+
+					return files, nil
+				},
+			},
+			want:    "plugin-one",
+			wantErr: false,
+		},
+		{
+			name: "NotFound",
+			args: args{
+				name:        "one",
+				prefix:      "plugin-",
+				pluginPaths: []string{"dir1", "dir2"},
+				path:        "dir3:dir4",
+				listDir: func(dir string) ([]os.FileInfo, error) {
+					var files []os.FileInfo
+					switch dir {
+					case "dir1":
+						files = []os.FileInfo{}
+					case "dir2":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-two", false},
+						}
+					case "dir3":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-four", false},
+						}
+					case "dir4":
+						files = []os.FileInfo{
+							fileInfoMock{"plugin-four", false},
+						}
+					}
+
+					return files, nil
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := expandName(tt.args.name, tt.args.prefix, tt.args.pluginPaths, tt.args.listDir)
+			got, err := expandName(tt.args.name, tt.args.prefix, tt.args.pluginPaths, tt.args.path, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expandName() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -98,36 +165,7 @@ func Test_expandName(t *testing.T) {
 	}
 }
 
-func Test_findPlugins(t *testing.T) {
-	type args struct {
-		prefix      string
-		pluginPaths []string
-		listDir     listDir
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := findPlugins(tt.args.prefix, tt.args.pluginPaths, tt.args.listDir)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("findPlugins() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("findPlugins() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_findPluginsInPathAux(t *testing.T) {
+func Test_findPluginsInPath(t *testing.T) {
 	type args struct {
 		prefix  string
 		path    string
@@ -197,7 +235,7 @@ func Test_findPluginsInPathAux(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := findPluginsInPathAux(tt.args.prefix, tt.args.path, tt.args.listDir)
+			got, err := findPluginsInPath(tt.args.prefix, tt.args.path, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("findPluginsInPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -213,6 +251,7 @@ func Test_findPluginsInDirectory(t *testing.T) {
 	type args struct {
 		prefix  string
 		dir     string
+		recurse bool
 		listDir listDir
 	}
 	tests := []struct {
@@ -224,8 +263,9 @@ func Test_findPluginsInDirectory(t *testing.T) {
 		{
 			name: "MultiplePlugins",
 			args: args{
-				prefix: "plugin-",
-				dir:    "testdir",
+				prefix:  "plugin-",
+				dir:     "testdir",
+				recurse: false,
 				listDir: func(string) ([]os.FileInfo, error) {
 					return []os.FileInfo{
 						fileInfoMock{
@@ -245,8 +285,9 @@ func Test_findPluginsInDirectory(t *testing.T) {
 		{
 			name: "OnePlugin",
 			args: args{
-				prefix: "plugin-",
-				dir:    "testdir",
+				prefix:  "plugin-",
+				dir:     "testdir",
+				recurse: false,
 				listDir: func(string) ([]os.FileInfo, error) {
 					return []os.FileInfo{
 						fileInfoMock{
@@ -266,8 +307,9 @@ func Test_findPluginsInDirectory(t *testing.T) {
 		{
 			name: "NoPlugins",
 			args: args{
-				prefix: "plugin-",
-				dir:    "testdir",
+				prefix:  "plugin-",
+				dir:     "testdir",
+				recurse: false,
 				listDir: func(string) ([]os.FileInfo, error) {
 					return []os.FileInfo{
 						fileInfoMock{
@@ -287,8 +329,9 @@ func Test_findPluginsInDirectory(t *testing.T) {
 		{
 			name: "Recursive",
 			args: args{
-				prefix: "plugin-",
-				dir:    "testdir",
+				prefix:  "plugin-",
+				dir:     "testdir",
+				recurse: true,
 				listDir: func(dir string) ([]os.FileInfo, error) {
 					if dir == "dir" {
 						return []os.FileInfo{
@@ -320,11 +363,48 @@ func Test_findPluginsInDirectory(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "NotRecursive",
+			args: args{
+				prefix:  "plugin-",
+				dir:     "testdir",
+				recurse: false,
+				listDir: func(dir string) ([]os.FileInfo, error) {
+					if dir == "dir" {
+						return []os.FileInfo{
+							fileInfoMock{
+								name:  "plugin-dir-one",
+								isDir: false,
+							},
+							fileInfoMock{
+								name:  "plugin-dir-two",
+								isDir: false,
+							},
+						}, nil
+					}
+
+					return []os.FileInfo{
+						fileInfoMock{
+							name:  "plugin-one",
+							isDir: false,
+						},
+						fileInfoMock{
+							name:  "dir",
+							isDir: true,
+						},
+					}, nil
+				},
+			},
+			want: []string{
+				"plugin-one",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := findPluginsInDirectory(tt.args.prefix, tt.args.dir, tt.args.listDir)
+			got, err := findPluginsInDirectory(tt.args.prefix, tt.args.dir, tt.args.recurse, tt.args.listDir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("findPluginsInDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return

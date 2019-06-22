@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	goplugin "github.com/hashicorp/go-plugin"
-
-	"log"
 
 	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
@@ -25,31 +22,34 @@ var (
 
 // PluginMap returns a map of plugin names to the corresponding plugin object.
 func PluginMap(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error) {
-	return pluginMap(prefix, pluginPaths, listDirFs)
+	path := os.Getenv("PATH")
+	return pluginMap(prefix, pluginPaths, path, listDirFs)
 }
 
 // ExpandName expands the name of plugin to the path to its corresponding executable.
 func ExpandName(name, prefix string, pluginPaths []string) (string, error) {
-	return expandName(name, prefix, pluginPaths, listDirFs)
+	path := os.Getenv("PATH")
+	return expandName(name, prefix, pluginPaths, path, listDirFs)
 }
 
-func pluginMap(prefix string, pluginPaths []string, listDir listDir) (map[string]goplugin.Plugin, error) {
+func pluginMap(prefix string, pluginPaths []string,
+	path string, listDir listDir) (map[string]goplugin.Plugin, error) {
 	pluginMap := map[string]goplugin.Plugin{}
-	plugins, err := findPlugins(prefix, pluginPaths, listDir)
+	plugins, err := findPlugins(prefix, pluginPaths, path, listDir)
 	if err != nil {
 		return pluginMap, err
 	}
 
 	for _, plugin := range plugins {
-		name := strings.TrimPrefix(path.Base(plugin), prefix)
+		name := strings.TrimPrefix(filepath.Base(plugin), prefix)
 		pluginMap[name] = &lpassPlugin.LastPassPlugin{}
 	}
 
 	return pluginMap, nil
 }
 
-func expandName(name, prefix string, pluginPaths []string, listDir listDir) (string, error) {
-	plugins, err := findPlugins(prefix, pluginPaths, listDir)
+func expandName(name, prefix string, pluginPaths []string, path string, listDir listDir) (string, error) {
+	plugins, err := findPlugins(prefix, pluginPaths, path, listDir)
 	if err != nil {
 		return "", fmt.Errorf("could not expand plugin %s: %v", name, err)
 	}
@@ -63,15 +63,15 @@ func expandName(name, prefix string, pluginPaths []string, listDir listDir) (str
 }
 
 // Find all available plugins and return the absolute path to them.
-func findPlugins(prefix string, pluginPaths []string, listDir listDir) ([]string, error) {
+func findPlugins(prefix string, pluginPaths []string, path string, listDir listDir) ([]string, error) {
 	// Get the plugins in the path
-	plugins, err := findPluginsInPath(prefix, listDir)
+	plugins, err := findPluginsInPath(prefix, path, listDir)
 	if err != nil {
 		return []string{}, err
 	}
 
 	for _, pluginPath := range pluginPaths {
-		foundPlugins, err := findPluginsInDirectory(prefix, pluginPath, listDir)
+		foundPlugins, err := findPluginsInDirectory(prefix, pluginPath, true, listDir)
 		if err != nil {
 			return []string{}, err
 		}
@@ -81,17 +81,11 @@ func findPlugins(prefix string, pluginPaths []string, listDir listDir) ([]string
 }
 
 // Find all plugins in the path
-func findPluginsInPath(prefix string, listDir listDir) ([]string, error) {
-	path := os.Getenv("PATH")
-	return findPluginsInPathAux(prefix, path, listDir)
-}
-
-func findPluginsInPathAux(prefix, path string, listDir listDir) ([]string, error) {
+func findPluginsInPath(prefix string, path string, listDir listDir) ([]string, error) {
 	plugins := make([]string, 0)
 	parts := filepath.SplitList(path)
-	log.Printf("Split PATH into parts %v", parts)
 	for _, dir := range parts {
-		dirPlugins, err := findPluginsInDirectory(prefix, dir, listDir)
+		dirPlugins, err := findPluginsInDirectory(prefix, dir, false, listDir)
 		if err != nil {
 			return []string{}, err
 		}
@@ -101,16 +95,20 @@ func findPluginsInPathAux(prefix, path string, listDir listDir) ([]string, error
 }
 
 // findPluginsInDirectory recursively finds plugins with a given prefix in a directory.
-func findPluginsInDirectory(prefix, dir string, listDir listDir) ([]string, error) {
+func findPluginsInDirectory(prefix, dir string, recurse bool, listDir listDir) ([]string, error) {
 	plugins := []string{}
+	if dir == "" {
+		return plugins, nil
+	}
+
 	files, err := listDir(dir)
 	if err != nil {
 		return []string{}, err
 	}
 
 	for _, file := range files {
-		if file.IsDir() {
-			belowPlugins, err := findPluginsInDirectory(prefix, file.Name(), listDir)
+		if file.IsDir() && recurse {
+			belowPlugins, err := findPluginsInDirectory(prefix, file.Name(), recurse, listDir)
 			if err != nil {
 				return []string{}, err
 			}
