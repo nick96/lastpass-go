@@ -25,11 +25,6 @@ func main() {
 	}
 	log.Debugf("Plugin map: %v", pluginMap)
 
-	handshakeConfig := goplugin.HandshakeConfig{
-		ProtocolVersion:  1,
-		MagicCookieKey:   "BASIC_PLUGIN",
-		MagicCookieValue: "hello",
-	}
 
 	plugin := os.Args[1]
 	pluginPath, err := discovery.ExpandName(plugin, PluginPrefix, pluginPaths)
@@ -39,7 +34,7 @@ func main() {
 	log.Debugf("Expanded plugin %s to path %s", plugin, pluginPath)
 
 	client := goplugin.NewClient(&goplugin.ClientConfig{
-		HandshakeConfig: handshakeConfig,
+		HandshakeConfig: lpassPlugin.HandshakeConfig,
 		Plugins:         pluginMap,
 		Cmd:             exec.Command(pluginPath),
 	})

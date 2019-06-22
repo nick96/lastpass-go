@@ -6,6 +6,17 @@ import (
 	"github.com/hashicorp/go-plugin"
 )
 
+
+var (
+	// HandshakeConfig is the config for the handshake between lpass and a
+	// plugin. It is provided here as an easy way for everyone to share the same config.
+	HandshakeConfig plugin.HandshakeConfig = goplugin.HandshakeConfig{
+		ProtocolVersion:  1,
+		MagicCookieKey:   "LPASS_MAGIC_COOKIE",
+		MagicCookieValue: "2",
+	}
+)
+
 // LastPass defines the interface a lastpass plugin must fulfill.
 type LastPass interface {
 	Execute(args []string)
