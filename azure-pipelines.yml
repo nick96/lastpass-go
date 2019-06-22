@@ -14,6 +14,7 @@ steps:
 
     - script: |
         docker build --target tester -t test .
+        mkdir test-results
         docker run test >test-results/gotest.xml
       displayName: 'Test'
 
