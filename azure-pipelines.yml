@@ -1,29 +1,35 @@
 pool:
   vmImage: 'ubuntu-latest'
 
+container: 'golang:1.12'
+
+variables:
+  GO111MODULE: 'on'
+
 steps:
-    - script: |
-        docker build --target builder -t build .
-        docker run build
-      displayName: 'Build'
+  - script: |
+      go get ./...
+      go get github.com/jstemmer/go-junit-report
+      go get github.com/t-yuki/gocover-cobertura
+    displayName: 'Get dependencies'
 
-    - script: |
-        docker build --target linter -t lint .
-        docker run lint
-      displayName: 'Lint'
+  - script: go build -v ./...
+    displayName: 'Build'
 
-    - script: |
-        docker build --target tester -t test .
-        mkdir test-results
-        docker run -v $PWD/output:/output test
-      displayName: 'Test'
+  - script: golangci-lint run
+    displayName: 'Lint'
 
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: JUnit
-        testResultsFiles: output/gotest.xml
+  - script: |
+      go test -coverprofile=coverage.txt -covermode count -timeout 1s -v ./... 2>&1 | tee gotest.out
+      go-junit-report <gotest.out >gotest.xml
+      gocover-cobertura <coverage.txt >coverage.xml
 
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: output/coverage.xml
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: gotest.xml
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: coverage.xml
