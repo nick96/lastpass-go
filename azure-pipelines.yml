@@ -30,7 +30,7 @@ steps:
 
     - script: |
         curl -sfL $(GOLANG_LINT_CI_URI)  | sh -s -- -b $(GOBIN) v1.17.1
-        golang-lint run --enable-all
+        golangci-lint run --enable-all
       workingDirectory: '$(modulePath)'
       displayName: 'Lint'
 
