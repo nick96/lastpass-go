@@ -10,13 +10,14 @@ import (
 
 	goplugin "github.com/hashicorp/go-plugin"
 
-	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 	"log"
+
+	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
 
 type listDir func(string) ([]os.FileInfo, error)
 
-//nolint:gochecknoglobals
+//Nolint:Gochecknoglobals
 var (
 	// Implementation of the listDir type that works on the actual file system
 	listDirFs listDir = ioutil.ReadDir
