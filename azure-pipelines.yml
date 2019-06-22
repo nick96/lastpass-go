@@ -23,8 +23,8 @@ steps:
 
   - script: |
       go test -coverprofile=coverage.txt -covermode count -timeout 1s -v ./... 2>&1 | tee gotest.out
-      go-junit-report <gotest.out >gotest.xml
-      gocover-cobertura <coverage.txt >coverage.xml
+      cat gotest.out | go-junit-report | tee gotest.xml
+      cat coverage.txt | gocover-cobertura | tee coverage.xml
     displayName: 'Test'
 
   - task: PublishTestResults@2
