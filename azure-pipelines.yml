@@ -15,7 +15,7 @@ steps:
     - script: |
         docker build --target tester -t test .
         mkdir test-results
-        docker run test -v gotest.xml:gotest.xml -v coverage.xml:coverage.xml
+        docker run -v gotest.xml:gotest.xml -v coverage.xml:coverage.xml test
       displayName: 'Test'
 
     - task: PublishTestResults@2
