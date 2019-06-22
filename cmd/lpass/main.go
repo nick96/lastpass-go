@@ -9,7 +9,7 @@ import (
 	"os"
 
 	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
-	discovery "github.com/nick96/lastpass-go/pkg/discovery"
+	"github.com/nick96/lastpass-go/pkg/discovery"
 )
 
 const (
