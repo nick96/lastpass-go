@@ -2,7 +2,7 @@ pool:
   vmImage: 'ubuntu-18.04'
 
 variables:
-  project: '$(build.repository.name)
+  project: '$(build.repository.name)'
 
 steps:
     - displayName: 'Build'
