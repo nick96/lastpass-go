@@ -21,7 +21,7 @@ steps:
       displayName: 'Setup workspace'
 
     - script: go version
-      displayName: 'Version
+      displayName: 'Version'
 
     - script: go build -v ./...
       workingDirectory: '$(modulePath)'
@@ -31,7 +31,7 @@ steps:
         curl -sfL $(GOLANG_LINT_CI_URI)  | sh -s -- -b $(GOBIN) v1.17.1
         golang-lint run --enable-all
       workingDirectory: '$(modulePath)'
-      displayName: 'Lint
+      displayName: 'Lint'
 
     - script: go test -v ./...
       workingDirectory: '$(modulePath)'
