@@ -14,12 +14,12 @@ import (
 
 const (
 	// PluginPrefix is the prefix to look for in plugins
-	PluginPrefix string = "lpass"
+	PluginPrefix string = "lpass-"
 )
 
 func main() {
 	pluginPaths := []string{}
-	pluginMap, err := discovery.Map(PluginPrefix, pluginPaths)
+	pluginMap, err := discovery.PluginMap(PluginPrefix, pluginPaths)
 	if err != nil {
 		log.Fatal(err)
 	}
