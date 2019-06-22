@@ -4,7 +4,7 @@ pool:
 variables:
   GO111MODULE: 'on'
   GOBIN:  '$(GOPATH)/bin'
-  GOROOT: '/usr/local/go1.12.4
+  GOROOT: '/usr/local/go1.12.4'
   GOPATH: '$(system.defaultWorkingDirectory)/gopath'
   GOLANG_LINT_CI_URI: 'https://install.goreleaser.com/github.com/golangci/golangci-lint.sh'
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
