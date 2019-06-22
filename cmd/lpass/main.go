@@ -8,8 +8,8 @@ import (
 
 	"os"
 
-	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 	"github.com/nick96/lastpass-go/pkg/discovery"
+	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
 
 const (
