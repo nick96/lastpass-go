@@ -61,7 +61,8 @@ func Test_pluginMap(t *testing.T) {
 				pluginPaths: []string{"dir1", "dir2"},
 				path:        "dir3",
 				listDir: func(dir string) ([]os.FileInfo, error) {
-					if dir == "dir1" {
+					switch dir {
+					case "dir1":
 						return []os.FileInfo{
 							fileInfoMock{
 								name:  "plugin-one",
@@ -72,14 +73,14 @@ func Test_pluginMap(t *testing.T) {
 								isDir: false,
 							},
 						}, nil
-					} else if dir == "dir2" {
+					case "dir2":
 						return []os.FileInfo{
 							fileInfoMock{
 								name:  "plugin-three",
 								isDir: false,
 							},
 						}, nil
-					} else {
+					default:
 						return []os.FileInfo{
 							fileInfoMock{
 								name:  "plugin-four",
@@ -91,6 +92,7 @@ func Test_pluginMap(t *testing.T) {
 							},
 						}, nil
 					}
+
 				},
 			},
 			want: map[string]goplugin.Plugin{
