@@ -10,7 +10,7 @@ import (
 
 	goplugin "github.com/hashicorp/go-plugin"
 
-	lpassPlugin "github.com/nick96/pkg/plugin"
+	lpassPlugin "github.com/nick96/lastpass-go/pkg/plugin"
 )
 
 // Map returns a map of plugin names to the corresponding plugin object.
@@ -23,7 +23,7 @@ func Map(prefix string, pluginPaths []string) (map[string]goplugin.Plugin, error
 
 	for _, plugin := range plugins {
 		name := strings.TrimPrefix(path.Base(plugin), prefix)
-		pluginMap[name] = &LastPassPlugin{}
+		pluginMap[name] = &lpassPlugin.LastPassPlugin{}
 	}
 
 	return pluginMap, nil
