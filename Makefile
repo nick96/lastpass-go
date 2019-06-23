@@ -23,4 +23,4 @@ deps:
 	go get ./...
 	go get github.com/jstemmer/go-junit-report
 	go get github.com/t-yuki/gocover-cobertura
-	curl -sfL $(LINTER_URI)  | sh -s -- -b $(go env GOPATH)/bin v1.17.1
+	curl -sfL $(LINTER_URI)  | sh -s -- -b $(shell go env GOPATH)/bin v1.17.1
