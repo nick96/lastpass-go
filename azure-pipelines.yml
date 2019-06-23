@@ -1,7 +1,7 @@
 pool:
   vmImage: 'ubuntu-latest'
 
-container: 'golang:1.12'
+# container: 'golang:1.12'
 
 variables:
   GO111MODULE: 'on'
@@ -26,14 +26,6 @@ steps:
       cat gotest.out | go-junit-report | tee gotest.xml
       cat coverage.txt | gocover-cobertura | tee coverage.xml
     displayName: 'Test'
-
-  - script: |
-      wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-      dpkg -i packages-microsoft-prod.deb
-      apt-get install -y apt-transport-https
-      apt-get update
-      apt-get install -y dotnet-sdk-2.2
-    displayName: 'Install DotNet Core'
 
   - task: PublishTestResults@2
     inputs:
