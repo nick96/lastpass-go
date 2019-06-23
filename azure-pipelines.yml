@@ -32,7 +32,7 @@ steps:
       testResultsFormat: JUnit
       testResultsFiles: gotest.xml
 
-  - task: PublishCodeCoverageResults@1
-    inputs:
-      codeCoverageTool: jacoco
-      summaryFileLocation: coverage.xml
+  # - task: PublishCodeCoverageResults@1
+  #   inputs:
+  #     codeCoverageTool: jacoco
+  #     summaryFileLocation: coverage.xml
