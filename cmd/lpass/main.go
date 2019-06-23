@@ -44,9 +44,9 @@ func main() {
 		log.Fatalf("Error: Could not get client: %v", err)
 	}
 
-	raw, err := rpcClient.Dispense(os.Args[1])
+	raw, err := rpcClient.Dispense(plugin)
 	if err != nil {
-		log.Fatalf("Error: Could not dispense greeter: %v", err)
+		log.Fatalf("Error: Could not dispense lastpass plugin %s: %v", plugin, err)
 	}
 
 	lastpass := raw.(lpassPlugin.LastPass)
