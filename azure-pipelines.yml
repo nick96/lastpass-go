@@ -7,6 +7,9 @@ variables:
   GO111MODULE: 'on'
 
 steps:
+  - script: go env
+    displayName: 'Environment'
+
   - script: make deps
     displayName: 'Get dependencies'
 
