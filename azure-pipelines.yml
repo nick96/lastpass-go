@@ -1,7 +1,7 @@
 pool:
   vmImage: 'ubuntu-latest'
 
-# container: 'golang:1.12'
+container: 'golang:1.12'
 
 variables:
   GO111MODULE: 'on'
